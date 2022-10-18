@@ -49,6 +49,9 @@ export class MeshViewer extends gfx.GfxApp
         const axes = new gfx.Axes3(4);
         this.scene.add(axes);
 
+        // Tessellate the box
+        this.tessellate(this.box, 1);
+
         // Add the box mesh to the scene
         this.box.material = this.morphMaterial;
         this.scene.add(this.box);
@@ -81,6 +84,7 @@ export class MeshViewer extends gfx.GfxApp
 
         const newVertices: gfx.Vector3[] = [];
         const newNormals: gfx.Vector3[] = [];
+        const newIndices: number[] = [];
 
         for(let i=0; i < vArray.length; i+=3)
         {
@@ -90,6 +94,9 @@ export class MeshViewer extends gfx.GfxApp
 
         for(let i=0; i < indices.length; i+=3)
         {
+            // Get the index number of the new vertx
+            const newIndex = newVertices.length;
+
             // Get all three vertices in the triangle
             const v1 = vertices[indices[i]];
             const v2 = vertices[indices[i+1]];
@@ -111,7 +118,36 @@ export class MeshViewer extends gfx.GfxApp
             newVertices.push(v1v3);
             newVertices.push(v2v3);
 
-            
+            // Get all three normals in the triangle
+            const n1 = normals[indices[i]];
+            const n2 = normals[indices[i+1]];
+            const n3 = normals[indices[i+2]];
+
+            // Compute the average normals along each edge
+            const n1n2 = gfx.Vector3.add(n1, n2);
+            n1n2.multiplyScalar(0.5);
+            const n1n3 = gfx.Vector3.add(n1, n3);
+            n1n3.multiplyScalar(0.5);
+            const n2n3 = gfx.Vector3.add(n2, n3);
+            n2n3.multiplyScalar(0.5);
+
+            // Add all six normals to the new vertex array
+            newNormals.push(n1);
+            newNormals.push(n2);
+            newNormals.push(n3);
+            newNormals.push(n1n2);
+            newNormals.push(n1n3);
+            newNormals.push(n2n3);
+
+            newIndices.push(newIndex, newIndex+3, newIndex+4);
+            newIndices.push(newIndex+1, newIndex+5, newIndex+3);
+            newIndices.push(newIndex+2, newIndex+4, newIndex+5);
+            newIndices.push(newIndex+3, newIndex+5, newIndex+4);
         }
+
+        mesh.setVertices(newVertices);
+        mesh.setNormals(newNormals);
+        mesh.setIndices(newIndices);
+        mesh.createDefaultVertexColors();
     }
 }
