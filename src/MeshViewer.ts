@@ -50,7 +50,8 @@ export class MeshViewer extends gfx.GfxApp
         this.scene.add(axes);
 
         // Tessellate the box
-        this.tessellate(this.box, 1);
+        for(let i=0; i<4; i++)
+            this.tessellate(this.box);
 
         // Add the box mesh to the scene
         this.box.material = this.morphMaterial;
@@ -73,7 +74,7 @@ export class MeshViewer extends gfx.GfxApp
         this.cameraControls.update(deltaTime);
     }
 
-    private tessellate(mesh: gfx.Mesh, iterations: number): void
+    private tessellate(mesh: gfx.Mesh): void
     {
         const vArray = mesh.getVertices();
         const nArray = mesh.getNormals();
