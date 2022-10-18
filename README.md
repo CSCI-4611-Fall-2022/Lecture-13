@@ -1,6 +1,6 @@
-# Lecture 13: Morphing
+# Lecture 13: Tessellation and Morphing
 
-Detailed explanation of this code can be found in the lecture video (will be added after class).
+Detailed explanation of this code can be found in the [lecture video](https://mediaspace.umn.edu/media/t/1_dsf0x8bi).
 
 You can run the program on [GitHub pages](https://csci-4611-fall-2022.github.io/Lecture-13).
 
@@ -10,7 +10,9 @@ To work with this code, you will first need to install [Node.js 16.17.0 LTS](htt
 
 ## Topics
 
-- TBD
+- Getting and update mesh buffer data
+- Mesh tessellation
+- Morphing
 
 ## Running
 

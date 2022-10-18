@@ -51,14 +51,19 @@ export class MeshViewer extends gfx.GfxApp
         const axes = new gfx.Axes3(4);
         this.scene.add(axes);
 
-        // Tessellate the box
+        // Subdivide all the triangles in the mesh
         for(let i=0; i<4; i++)
             this.tessellate(this.box);
 
-        this.computeMorphtarget(this.box);
+        // Compute the morph vertices and normals
+        this.computeMorphTarget(this.box);
+
+        // Set the material properties
+        this.morphMaterial.specularColor.set(1, 1, 1, 1);
+        this.morphMaterial.shininess = 50;
+        this.box.material = this.morphMaterial;
 
         // Add the box mesh to the scene
-        this.box.material = this.morphMaterial;
         this.scene.add(this.box);
 
         // Create a simple GUI
@@ -81,7 +86,7 @@ export class MeshViewer extends gfx.GfxApp
         this.cameraControls.update(deltaTime);
     }
 
-    private computeMorphtarget(mesh: gfx.Mesh): void
+    private computeMorphTarget(mesh: gfx.Mesh): void
     {
         const vArray = mesh.getVertices();
         const nArray = mesh.getNormals();
@@ -90,6 +95,7 @@ export class MeshViewer extends gfx.GfxApp
         const vertices: gfx.Vector3[] = [];
         const normals: gfx.Vector3[] = [];
 
+        // Copy the vertices and normals into Vector3 arrays for convenience
         for(let i=0; i < vArray.length; i+=3)
         {
             vertices.push(new gfx.Vector3(vArray[i], vArray[i+1], vArray[i+2]));
@@ -130,6 +136,9 @@ export class MeshViewer extends gfx.GfxApp
         mesh.setMorphTargetNormals(morphNormals);
     }
 
+    // This function subdivides each triangle in a mesh
+    // Each triangle will reference three unique vertices
+    // that will not be shared between triangles.
     private tessellate(mesh: gfx.Mesh): void
     {
         const vArray = mesh.getVertices();
@@ -139,6 +148,7 @@ export class MeshViewer extends gfx.GfxApp
         const vertices: gfx.Vector3[] = [];
         const normals: gfx.Vector3[] = [];
 
+        // Copy the vertices and normals into Vector3 arrays for convenience
         for(let i=0; i < vArray.length; i+=3)
         {
             vertices.push(new gfx.Vector3(vArray[i], vArray[i+1], vArray[i+2]));
