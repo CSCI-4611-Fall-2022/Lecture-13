@@ -69,4 +69,21 @@ export class MeshViewer extends gfx.GfxApp
         // Update the camera orbit controls
         this.cameraControls.update(deltaTime);
     }
+
+    private tessellate(mesh: gfx.Mesh, iterations: number): void
+    {
+        const vArray = mesh.getVertices();
+        const nArray = mesh.getNormals();
+
+        const vertices: gfx.Vector3[] = [];
+        const normals: gfx.Vector3[] = [];
+
+        for(let i=0; i < vArray.length; i+=3)
+        {
+            vertices.push(new gfx.Vector3(vArray[i], vArray[i+1], vArray[i+2]));
+            normals.push(new gfx.Vector3(nArray[i], nArray[i+1], nArray[i+2]));
+        }
+
+        
+    }
 }
