@@ -105,6 +105,27 @@ export class MeshViewer extends gfx.GfxApp
             morphNormals.push(new gfx.Vector3(0, 0, 1));
         }
 
+        for(let i=0; i < indices.length; i+=3)
+        {
+            // Get all three vertices in the triangle
+            const v1 = vertices[indices[i]].clone();
+            const v2 = vertices[indices[i+1]].clone();
+            const v3 = vertices[indices[i+2]].clone();
+
+            const position = new gfx.Vector3(Math.random()-0.5, Math.random()-0.5, Math.random()-0.5);
+        
+            const mv1 = position.clone();
+            const mv2 = position.clone();
+            const mv3 = position.clone();
+
+            mv2.add(gfx.Vector3.subtract(v2, v1));
+            mv3.add(gfx.Vector3.subtract(v3, v1));
+
+            morphVertices[indices[i]] = mv1;
+            morphVertices[indices[i+1]] = mv2;
+            morphVertices[indices[i+2]] = mv3;
+        }
+
         mesh.setMorphTargetVertices(morphVertices);
         mesh.setMorphTargetNormals(morphNormals);
     }
@@ -146,18 +167,10 @@ export class MeshViewer extends gfx.GfxApp
             const v2v3 = gfx.Vector3.add(v2, v3);
             v2v3.multiplyScalar(0.5);
 
-            // Add all six vertices to the new vertex array
-            newVertices.push(v1);
-            newVertices.push(v2);
-            newVertices.push(v3);
-            newVertices.push(v1v2);
-            newVertices.push(v1v3);
-            newVertices.push(v2v3);
-
             // Get all three normals in the triangle
-            const n1 = normals[indices[i]];
-            const n2 = normals[indices[i+1]];
-            const n3 = normals[indices[i+2]];
+            const n1 = normals[indices[i]].clone();
+            const n2 = normals[indices[i+1]].clone();
+            const n3 = normals[indices[i+2]].clone();
 
             // Compute the average normals along each edge
             const n1n2 = gfx.Vector3.add(n1, n2);
@@ -167,18 +180,41 @@ export class MeshViewer extends gfx.GfxApp
             const n2n3 = gfx.Vector3.add(n2, n3);
             n2n3.multiplyScalar(0.5);
 
-            // Add all six normals to the new vertex array
+            // Top triangle
+            newVertices.push(v1);
+            newVertices.push(v1v2);
+            newVertices.push(v1v3);
             newNormals.push(n1);
-            newNormals.push(n2);
-            newNormals.push(n3);
             newNormals.push(n1n2);
             newNormals.push(n1n3);
-            newNormals.push(n2n3);
+            newIndices.push(newIndex, newIndex+1, newIndex+2);
 
-            newIndices.push(newIndex, newIndex+3, newIndex+4);
-            newIndices.push(newIndex+1, newIndex+5, newIndex+3);
-            newIndices.push(newIndex+2, newIndex+4, newIndex+5);
-            newIndices.push(newIndex+3, newIndex+5, newIndex+4);
+            // Bottom right triangle
+            newVertices.push(v1v2);
+            newVertices.push(v2);
+            newVertices.push(v2v3);
+            newNormals.push(n1n2);
+            newNormals.push(n2);
+            newNormals.push(n2n3);
+            newIndices.push(newIndex+3, newIndex+4, newIndex+5);
+
+            // Bottom left triangle
+            newVertices.push(v1v3);
+            newVertices.push(v2v3);
+            newVertices.push(v3);
+            newNormals.push(n1n3);
+            newNormals.push(n2n3);
+            newNormals.push(n3);
+            newIndices.push(newIndex+6, newIndex+7, newIndex+8);
+
+            // Middle triangle
+            newVertices.push(v1v3);
+            newVertices.push(v1v2);
+            newVertices.push(v2v3);
+            newNormals.push(n1n3);
+            newNormals.push(n1n2);
+            newNormals.push(n2n3);
+            newIndices.push(newIndex+9, newIndex+10, newIndex+11);
         }
 
         mesh.setVertices(newVertices);
