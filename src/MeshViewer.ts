@@ -15,6 +15,7 @@ export class MeshViewer extends gfx.GfxApp
 
     // GUI variables
     private wireframe: boolean;
+    private alpha: number;
 
     constructor()
     {
@@ -25,6 +26,7 @@ export class MeshViewer extends gfx.GfxApp
         this.morphMaterial = new gfx.MorphMaterial();
 
         this.wireframe = false;
+        this.alpha = 0;
     }
 
     createScene(): void 
@@ -53,6 +55,8 @@ export class MeshViewer extends gfx.GfxApp
         for(let i=0; i<4; i++)
             this.tessellate(this.box);
 
+        this.computeMorphtarget(this.box);
+
         // Add the box mesh to the scene
         this.box.material = this.morphMaterial;
         this.scene.add(this.box);
@@ -66,12 +70,43 @@ export class MeshViewer extends gfx.GfxApp
          debugController.name('Wireframe');
          debugController.onChange((value: boolean) => { this.morphMaterial.wireframe = value; });
  
+         const morphController = gui.add(this, 'alpha', 0, 1);
+         morphController.name('Alpha');
+         morphController.onChange((value: number) => { this.morphMaterial.morphAlpha = value; });
     }
 
     update(deltaTime: number): void 
     {
         // Update the camera orbit controls
         this.cameraControls.update(deltaTime);
+    }
+
+    private computeMorphtarget(mesh: gfx.Mesh): void
+    {
+        const vArray = mesh.getVertices();
+        const nArray = mesh.getNormals();
+        const indices = mesh.getIndices();
+
+        const vertices: gfx.Vector3[] = [];
+        const normals: gfx.Vector3[] = [];
+
+        for(let i=0; i < vArray.length; i+=3)
+        {
+            vertices.push(new gfx.Vector3(vArray[i], vArray[i+1], vArray[i+2]));
+            normals.push(new gfx.Vector3(nArray[i], nArray[i+1], nArray[i+2]));
+        }
+
+        const morphVertices: gfx.Vector3[] = [];
+        const morphNormals: gfx.Vector3[] = [];
+
+        for(let i=0; i < vertices.length; i++)
+        {
+            morphVertices.push(new gfx.Vector3(0, 0, 0));
+            morphNormals.push(new gfx.Vector3(0, 0, 1));
+        }
+
+        mesh.setMorphTargetVertices(morphVertices);
+        mesh.setMorphTargetNormals(morphNormals);
     }
 
     private tessellate(mesh: gfx.Mesh): void
@@ -83,15 +118,15 @@ export class MeshViewer extends gfx.GfxApp
         const vertices: gfx.Vector3[] = [];
         const normals: gfx.Vector3[] = [];
 
-        const newVertices: gfx.Vector3[] = [];
-        const newNormals: gfx.Vector3[] = [];
-        const newIndices: number[] = [];
-
         for(let i=0; i < vArray.length; i+=3)
         {
             vertices.push(new gfx.Vector3(vArray[i], vArray[i+1], vArray[i+2]));
             normals.push(new gfx.Vector3(nArray[i], nArray[i+1], nArray[i+2]));
         }
+
+        const newVertices: gfx.Vector3[] = [];
+        const newNormals: gfx.Vector3[] = [];
+        const newIndices: number[] = [];
 
         for(let i=0; i < indices.length; i+=3)
         {
