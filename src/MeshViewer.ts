@@ -74,9 +74,13 @@ export class MeshViewer extends gfx.GfxApp
     {
         const vArray = mesh.getVertices();
         const nArray = mesh.getNormals();
+        const indices = mesh.getIndices();
 
         const vertices: gfx.Vector3[] = [];
         const normals: gfx.Vector3[] = [];
+
+        const newVertices: gfx.Vector3[] = [];
+        const newNormals: gfx.Vector3[] = [];
 
         for(let i=0; i < vArray.length; i+=3)
         {
@@ -84,6 +88,30 @@ export class MeshViewer extends gfx.GfxApp
             normals.push(new gfx.Vector3(nArray[i], nArray[i+1], nArray[i+2]));
         }
 
-        
+        for(let i=0; i < indices.length; i+=3)
+        {
+            // Get all three vertices in the triangle
+            const v1 = vertices[indices[i]];
+            const v2 = vertices[indices[i+1]];
+            const v3 = vertices[indices[i+2]];
+
+            // Compute the midpoints along each edge
+            const v1v2 = gfx.Vector3.add(v1, v2);
+            v1v2.multiplyScalar(0.5);
+            const v1v3 = gfx.Vector3.add(v1, v3);
+            v1v3.multiplyScalar(0.5);
+            const v2v3 = gfx.Vector3.add(v2, v3);
+            v2v3.multiplyScalar(0.5);
+
+            // Add all six vertices to the new vertex array
+            newVertices.push(v1);
+            newVertices.push(v2);
+            newVertices.push(v3);
+            newVertices.push(v1v2);
+            newVertices.push(v1v3);
+            newVertices.push(v2v3);
+
+            
+        }
     }
 }
