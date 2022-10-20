@@ -151,14 +151,33 @@ export class MeshViewer extends gfx.GfxApp
             const v2 = vertices[indices[i+1]].clone();
             const v3 = vertices[indices[i+2]].clone();
 
-            const position = new gfx.Vector3(Math.random()-0.5, Math.random()-0.5, Math.random()-0.5);
+            // Compute a random position within a sphere
+            const translationQuat = gfx.Quaternion.makeEulerAngles(
+                Math.random()*Math.PI*2,
+                Math.random()*Math.PI*2,
+                Math.random()*Math.PI*2)
+            const position = gfx.Vector3.rotate(new gfx.Vector3(0, 0, Math.random()), translationQuat);
         
-            const mv1 = position.clone();
-            const mv2 = position.clone();
-            const mv3 = position.clone();
+            // Compute another random triangle rotation
+            const rotationQuat = gfx.Quaternion.makeEulerAngles(
+                Math.random()*Math.PI*2,
+                Math.random()*Math.PI*2,
+                Math.random()*Math.PI*2);
 
-            mv2.add(gfx.Vector3.subtract(v2, v1));
-            mv3.add(gfx.Vector3.subtract(v3, v1));
+            // Create a new triangle
+            const mv1 = new gfx.Vector3(0, 0, 0);
+            const mv2 = gfx.Vector3.subtract(v2, v1);
+            const mv3 = gfx.Vector3.subtract(v3, v1);
+
+            // Rotate the triangle to face in the random direction
+            mv1.rotate(rotationQuat);
+            mv2.rotate(rotationQuat);
+            mv3.rotate(rotationQuat);
+
+            // Move to the random position
+            mv1.add(position);
+            mv2.add(position);
+            mv3.add(position);  
 
             morphVertices[indices[i]] = mv1;
             morphVertices[indices[i+1]] = mv2;
