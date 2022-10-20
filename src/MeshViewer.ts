@@ -51,6 +51,9 @@ export class MeshViewer extends gfx.GfxApp
         const axes = new gfx.Axes3(4);
         this.scene.add(axes);
 
+        // Compute random colors at each corner of the box
+        this.assignColors(this.box);
+
         // Subdivide all the triangles in the mesh
         for(let i=0; i<4; i++)
             this.tessellate(this.box);
@@ -78,6 +81,36 @@ export class MeshViewer extends gfx.GfxApp
          const morphController = gui.add(this, 'alpha', 0, 1);
          morphController.name('Alpha');
          morphController.onChange((value: number) => { this.morphMaterial.morphAlpha = value; });
+    }
+
+    private assignColors(mesh: gfx.Mesh): void
+    {
+        const colors = mesh.getColors();
+
+        for(let i=0; i < 6; i++)
+        {
+            colors[i*16] = 1;
+            colors[i*16+1] = 0;
+            colors[i*16+2] = 0;
+            colors[i*16+3] = 1;
+
+            colors[i*16+4] = 0;
+            colors[i*16+5] = 1;
+            colors[i*16+6] = 1;
+            colors[i*16+7] = 1;
+
+            colors[i*16+8] = 0;
+            colors[i*16+9] = 0;
+            colors[i*16+10] = 1;
+            colors[i*16+11] = 1;
+
+            colors[i*16+12] = 1;
+            colors[i*16+13] = 1;
+            colors[i*16+14] = 0;
+            colors[i*16+15] = 1;
+        }
+
+        mesh.setColors(colors);
     }
 
     update(deltaTime: number): void 
@@ -143,10 +176,12 @@ export class MeshViewer extends gfx.GfxApp
     {
         const vArray = mesh.getVertices();
         const nArray = mesh.getNormals();
+        const cArray = mesh.getColors();
         const indices = mesh.getIndices();
 
         const vertices: gfx.Vector3[] = [];
         const normals: gfx.Vector3[] = [];
+        const colors: gfx.Color[] = [];
 
         // Copy the vertices and normals into Vector3 arrays for convenience
         for(let i=0; i < vArray.length; i+=3)
@@ -155,8 +190,15 @@ export class MeshViewer extends gfx.GfxApp
             normals.push(new gfx.Vector3(nArray[i], nArray[i+1], nArray[i+2]));
         }
 
+        // Copy the colors into Color arrays for convenience
+        for(let i=0; i < cArray.length; i+=4)
+        {
+            colors.push(new gfx.Color(cArray[i], cArray[i+1], cArray[i+2], cArray[i+3]));
+        }
+
         const newVertices: gfx.Vector3[] = [];
         const newNormals: gfx.Vector3[] = [];
+        const newColors: gfx.Color[] = [];
         const newIndices: number[] = [];
 
         for(let i=0; i < indices.length; i+=3)
@@ -190,6 +232,19 @@ export class MeshViewer extends gfx.GfxApp
             const n2n3 = gfx.Vector3.add(n2, n3);
             n2n3.multiplyScalar(0.5);
 
+            // Get all three colors in the triangle
+            const c1 = colors[indices[i]];
+            const c2 = colors[indices[i+1]];
+            const c3 = colors[indices[i+2]];
+
+            // Compute the average colors
+            const c1c2 = gfx.Color.add(c1, c2);
+            c1c2.multiplyScalar(0.5);
+            const c1c3 = gfx.Color.add(c1, c3);
+            c1c3.multiplyScalar(0.5);
+            const c2c3 = gfx.Color.add(c2, c3);
+            c2c3.multiplyScalar(0.5);
+
             // Top triangle
             newVertices.push(v1);
             newVertices.push(v1v2);
@@ -197,6 +252,9 @@ export class MeshViewer extends gfx.GfxApp
             newNormals.push(n1);
             newNormals.push(n1n2);
             newNormals.push(n1n3);
+            newColors.push(c1);
+            newColors.push(c1c2);
+            newColors.push(c1c3);
             newIndices.push(newIndex, newIndex+1, newIndex+2);
 
             // Bottom right triangle
@@ -206,6 +264,9 @@ export class MeshViewer extends gfx.GfxApp
             newNormals.push(n1n2);
             newNormals.push(n2);
             newNormals.push(n2n3);
+            newColors.push(c1c2);
+            newColors.push(c2);
+            newColors.push(c2c3);
             newIndices.push(newIndex+3, newIndex+4, newIndex+5);
 
             // Bottom left triangle
@@ -215,6 +276,9 @@ export class MeshViewer extends gfx.GfxApp
             newNormals.push(n1n3);
             newNormals.push(n2n3);
             newNormals.push(n3);
+            newColors.push(c1c3);
+            newColors.push(c2c3);
+            newColors.push(c3);
             newIndices.push(newIndex+6, newIndex+7, newIndex+8);
 
             // Middle triangle
@@ -224,12 +288,15 @@ export class MeshViewer extends gfx.GfxApp
             newNormals.push(n1n3);
             newNormals.push(n1n2);
             newNormals.push(n2n3);
+            newColors.push(c1c3);
+            newColors.push(c1c2);
+            newColors.push(c2c3);
             newIndices.push(newIndex+9, newIndex+10, newIndex+11);
         }
 
         mesh.setVertices(newVertices);
         mesh.setNormals(newNormals);
+        mesh.setColors(newColors);
         mesh.setIndices(newIndices);
-        mesh.createDefaultVertexColors();
     }
 }
